@@ -2,9 +2,11 @@ package com.example.sample_spring_boot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
+@EnableJpaRepositories
 @RestController
 public class SampleSpringBootApplication {
 
