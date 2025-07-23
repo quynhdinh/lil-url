@@ -1,7 +1,6 @@
 package com.example.sample_spring_boot.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "urls")
@@ -17,21 +16,21 @@ public class Url {
     @Column(name = "short_code", nullable = false, unique = true, length = 10)
     private String shortCode;
     
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
     
-    @Column(name = "click_count", nullable = false)
-    private Long clickCount = 0L;
+    @Column(name = "created_at", nullable = false)
+    private Long createdAt;
     
     // Default constructor
     public Url() {}
     
-    // Constructor
-    public Url(String originalUrl, String shortCode) {
+    // Constructor with userId (required since userId is non-nullable)
+    public Url(String originalUrl, String shortCode, Integer userId) {
         this.originalUrl = originalUrl;
         this.shortCode = shortCode;
-        this.createdAt = LocalDateTime.now();
-        this.clickCount = 0L;
+        this.userId = userId;
+        this.createdAt = System.currentTimeMillis();
     }
     
     // Getters and setters
@@ -59,29 +58,26 @@ public class Url {
         this.shortCode = shortCode;
     }
     
-    public LocalDateTime getCreatedAt() {
+    public Integer getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+    
+    public Long getCreatedAt() {
         return createdAt;
     }
     
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Long createdAt) {
         this.createdAt = createdAt;
-    }
-    
-    public Long getClickCount() {
-        return clickCount;
-    }
-    
-    public void setClickCount(Long clickCount) {
-        this.clickCount = clickCount;
     }
     
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (clickCount == null) {
-            clickCount = 0L;
+            createdAt = System.currentTimeMillis();
         }
     }
 }
