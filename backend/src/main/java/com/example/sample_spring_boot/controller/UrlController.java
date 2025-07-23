@@ -3,11 +3,9 @@ package com.example.sample_spring_boot.controller;
 import com.example.sample_spring_boot.entity.Url;
 import com.example.sample_spring_boot.repository.UrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,14 +39,20 @@ public class UrlController {
     }
     
     @GetMapping("/urls/{shortCode}")
-    public ResponseEntity<Void> getUrl(@PathVariable String shortCode) {
+    public ResponseEntity<GetUrlResponse> getUrl(@PathVariable String shortCode) {
         Optional<Url> url = urlRepository.findByShortCode(shortCode);
         
+        System.out.println("here");
         if (url.isPresent()) {
-            // Redirect to the original URL with 302 status
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create(url.get().getOriginalUrl()))
-                    .build();
+            System.out.println("Returning original URL: " + url.get().getOriginalUrl());
+            // Return JSON response with original URL
+            GetUrlResponse response = new GetUrlResponse();
+            response.setOriginalUrl(url.get().getOriginalUrl());
+            response.setShortCode(url.get().getShortCode());
+            response.setMessage("URL found successfully");
+            System.out.println(response);
+            
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -166,6 +170,37 @@ public class UrlController {
         
         public void setUserId(Integer userId) {
             this.userId = userId;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+        
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+    
+    // Inner class for get URL response body
+    public static class GetUrlResponse {
+        private String originalUrl;
+        private String shortCode;
+        private String message;
+        
+        public String getOriginalUrl() {
+            return originalUrl;
+        }
+        
+        public void setOriginalUrl(String originalUrl) {
+            this.originalUrl = originalUrl;
+        }
+        
+        public String getShortCode() {
+            return shortCode;
+        }
+        
+        public void setShortCode(String shortCode) {
+            this.shortCode = shortCode;
         }
         
         public String getMessage() {
