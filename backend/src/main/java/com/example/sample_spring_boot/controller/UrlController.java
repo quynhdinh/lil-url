@@ -39,20 +39,12 @@ public class UrlController {
     }
     
     @GetMapping("/urls/{shortCode}")
-    public ResponseEntity<GetUrlResponse> getUrl(@PathVariable String shortCode) {
+    public ResponseEntity<Url> getUrl(@PathVariable String shortCode) {
         Optional<Url> url = urlRepository.findByShortCode(shortCode);
         
         System.out.println("here");
         if (url.isPresent()) {
-            System.out.println("Returning original URL: " + url.get().getOriginalUrl());
-            // Return JSON response with original URL
-            GetUrlResponse response = new GetUrlResponse();
-            response.setOriginalUrl(url.get().getOriginalUrl());
-            response.setShortCode(url.get().getShortCode());
-            response.setMessage("URL found successfully");
-            System.out.println(response);
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(url.get());
         } else {
             return ResponseEntity.notFound().build();
         }
