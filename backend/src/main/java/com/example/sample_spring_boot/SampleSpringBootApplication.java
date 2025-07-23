@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 
 @SpringBootApplication
 @EnableJpaRepositories
@@ -16,7 +15,7 @@ public class SampleSpringBootApplication {
 	}
 
 	@GetMapping("/")
-    public RedirectView hello() {
-        return new RedirectView("/index.html");
+    public String hello() {
+        return "Hi From LilURL";
     }
 }
