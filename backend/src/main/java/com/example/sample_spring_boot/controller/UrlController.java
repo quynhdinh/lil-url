@@ -41,8 +41,7 @@ public class UrlController {
     @GetMapping("/urls/{shortCode}")
     public ResponseEntity<Url> getUrl(@PathVariable String shortCode) {
         Optional<Url> url = urlRepository.findByShortCode(shortCode);
-        
-        System.out.println("here");
+        // System.out.println("here");
         if (url.isPresent()) {
             return ResponseEntity.ok(url.get());
         } else {
