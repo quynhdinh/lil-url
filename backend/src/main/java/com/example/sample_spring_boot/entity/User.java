@@ -1,10 +1,15 @@
 package com.example.sample_spring_boot.entity;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +24,9 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
     
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+    
     @Column(name = "created_at", nullable = false)
     private Long createdAt;
     
@@ -30,7 +38,39 @@ public class User {
         this.email = email;
         this.password = password;
         this.fullName = fullName;
+        this.enabled = true;
         this.createdAt = System.currentTimeMillis();
+    }
+    
+    // UserDetails interface methods
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList(); // No roles for now, can be extended later
+    }
+    
+    @Override
+    public String getUsername() {
+        return email; // Use email as username
+    }
+    
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
     
     // Getters and setters
@@ -64,6 +104,10 @@ public class User {
     
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
     
     public Long getCreatedAt() {
