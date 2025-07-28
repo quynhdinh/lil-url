@@ -1,0 +1,195 @@
+package com.example.sample_spring_boot.service;
+
+import com.example.sample_spring_boot.entity.Click;
+import com.example.sample_spring_boot.entity.Url;
+import com.example.sample_spring_boot.repository.ClickRepository;
+import com.example.sample_spring_boot.repository.UrlRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ClickService {
+    
+    @Autowired
+    private ClickRepository clickRepository;
+    
+    @Autowired
+    private UrlRepository urlRepository;
+    
+    /**
+     * Record a click for a short URL
+     * @param shortCode The short code that was clicked
+     * @param userId The user who clicked (null for anonymous)
+     * @return The created Click entity
+     */
+    public Click recordClick(String shortCode, Integer userId) {
+        Click click = new Click(userId, shortCode);
+        System.out.println("Recording click: " + click);
+        return clickRepository.save(click);
+    }
+    
+    /**
+     * Get total click count for a short code
+     * @param shortCode The short code to count clicks for
+     * @return Number of clicks
+     */
+    public long getClickCount(String shortCode) {
+        return clickRepository.countByShortCode(shortCode);
+    }
+    
+    /**
+     * Get all clicks for a specific short code
+     * @param shortCode The short code to get clicks for
+     * @return List of clicks
+     */
+    public List<Click> getClicksByShortCode(String shortCode) {
+        return clickRepository.findByShortCode(shortCode);
+    }
+    
+    /**
+     * Get all clicks by a specific user
+     * @param userId The user ID to get clicks for
+     * @return List of clicks by the user
+     */
+    public List<Click> getClicksByUserId(Integer userId) {
+        return clickRepository.findByUserId(userId);
+    }
+    
+    /**
+     * Get click statistics for a URL
+     * @param shortCode The short code to get stats for
+     * @return ClickStats object with detailed information
+     */
+    public ClickStats getClickStats(String shortCode) {
+        List<Click> clicks = clickRepository.findByShortCode(shortCode);
+        long totalClicks = clicks.size();
+        long uniqueUsers = clicks.stream()
+                .filter(click -> click.getUserId() != null)
+                .mapToInt(Click::getUserId)
+                .distinct()
+                .count();
+        long anonymousClicks = clicks.stream()
+                .filter(click -> click.getUserId() == null)
+                .count();
+        
+        Optional<Url> url = urlRepository.findByShortCode(shortCode);
+        String originalUrl = url.map(Url::getOriginalUrl).orElse("Unknown");
+        
+        return new ClickStats(shortCode, originalUrl, totalClicks, uniqueUsers, anonymousClicks, clicks);
+    }
+    
+    /**
+     * Get total clicks for a user across all their URLs
+     * @param userId The user ID
+     * @return Total click count
+     */
+    public long getTotalClicksForUser(Integer userId) {
+        return clickRepository.countByUserId(userId);
+    }
+    
+    /**
+     * Check if a URL exists before recording a click
+     * @param shortCode The short code to validate
+     * @return true if the URL exists, false otherwise
+     */
+    public boolean isValidShortCode(String shortCode) {
+        return urlRepository.existsByShortCode(shortCode);
+    }
+    
+    /**
+     * Record a click with validation
+     * @param shortCode The short code that was clicked
+     * @param userId The user who clicked (null for anonymous)
+     * @return The created Click entity, or null if invalid short code
+     */
+    public Click recordValidatedClick(String shortCode, Integer userId) {
+        if (!isValidShortCode(shortCode)) {
+            return null;
+        }
+        return recordClick(shortCode, userId);
+    }
+    
+    /**
+     * Delete all clicks for a specific short code
+     * @param shortCode The short code to delete clicks for
+     */
+    public void deleteClicksByShortCode(String shortCode) {
+        List<Click> clicks = clickRepository.findByShortCode(shortCode);
+        clickRepository.deleteAll(clicks);
+    }
+    
+    /**
+     * Inner class for click statistics
+     */
+    public static class ClickStats {
+        private String shortCode;
+        private String originalUrl;
+        private long totalClicks;
+        private long uniqueUsers;
+        private long anonymousClicks;
+        private List<Click> recentClicks;
+        
+        public ClickStats(String shortCode, String originalUrl, long totalClicks, 
+                         long uniqueUsers, long anonymousClicks, List<Click> recentClicks) {
+            this.shortCode = shortCode;
+            this.originalUrl = originalUrl;
+            this.totalClicks = totalClicks;
+            this.uniqueUsers = uniqueUsers;
+            this.anonymousClicks = anonymousClicks;
+            this.recentClicks = recentClicks;
+        }
+        
+        // Getters
+        public String getShortCode() {
+            return shortCode;
+        }
+        
+        public String getOriginalUrl() {
+            return originalUrl;
+        }
+        
+        public long getTotalClicks() {
+            return totalClicks;
+        }
+        
+        public long getUniqueUsers() {
+            return uniqueUsers;
+        }
+        
+        public long getAnonymousClicks() {
+            return anonymousClicks;
+        }
+        
+        public List<Click> getRecentClicks() {
+            return recentClicks;
+        }
+        
+        // Setters
+        public void setShortCode(String shortCode) {
+            this.shortCode = shortCode;
+        }
+        
+        public void setOriginalUrl(String originalUrl) {
+            this.originalUrl = originalUrl;
+        }
+        
+        public void setTotalClicks(long totalClicks) {
+            this.totalClicks = totalClicks;
+        }
+        
+        public void setUniqueUsers(long uniqueUsers) {
+            this.uniqueUsers = uniqueUsers;
+        }
+        
+        public void setAnonymousClicks(long anonymousClicks) {
+            this.anonymousClicks = anonymousClicks;
+        }
+        
+        public void setRecentClicks(List<Click> recentClicks) {
+            this.recentClicks = recentClicks;
+        }
+    }
+}

@@ -3,6 +3,7 @@ package com.example.sample_spring_boot.controller;
 import com.example.sample_spring_boot.entity.Url;
 import com.example.sample_spring_boot.repository.UrlRepository;
 import com.example.sample_spring_boot.service.ShortenURLService;
+import com.example.sample_spring_boot.service.ClickService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,10 @@ public class UrlController {
 
     @Autowired
     private ShortenURLService shortenURLService;
+
+    @Autowired
+    private ClickService clickService;
+
     
     @GetMapping("/health")
     public ResponseEntity<String> health() {
@@ -35,14 +40,14 @@ public class UrlController {
     @GetMapping("/urls/{shortCode}")
     public ResponseEntity<Url> getUrl(@PathVariable String shortCode) {
         Optional<Url> url = urlRepository.findByShortCode(shortCode);
-        // System.out.println("here");
         if (url.isPresent()) {
+            clickService.recordClick(shortCode, url.get().getUserId()); // Record click for anonymous user
             return ResponseEntity.ok(url.get());
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PostMapping("/shorten")
     public ResponseEntity<ShortenUrlResponse> shortenUrl(@RequestBody ShortenUrlRequest request) {
         Optional<Integer> userId = Optional.ofNullable(request.getUserId());
