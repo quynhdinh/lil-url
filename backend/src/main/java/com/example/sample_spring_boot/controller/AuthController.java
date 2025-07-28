@@ -58,6 +58,7 @@ public class AuthController {
             Map<String, Object> response = new HashMap<>();
             response.put("token", jwt);
             response.put("email", userDetails.getUsername());
+            response.put("fullName", user.getFullName());
             response.put("message", "Login successful");
             
             return ResponseEntity.ok(response);

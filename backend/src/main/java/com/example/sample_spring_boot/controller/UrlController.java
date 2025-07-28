@@ -2,6 +2,8 @@ package com.example.sample_spring_boot.controller;
 
 import com.example.sample_spring_boot.entity.Url;
 import com.example.sample_spring_boot.repository.UrlRepository;
+import com.example.sample_spring_boot.service.ShortenURLService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,9 @@ public class UrlController {
     
     @Autowired
     private UrlRepository urlRepository;
+
+    @Autowired
+    private ShortenURLService shortenURLService;
     
     @GetMapping("/health")
     public ResponseEntity<String> health() {
@@ -25,17 +30,6 @@ public class UrlController {
     public ResponseEntity<List<Url>> getAllUrls() {
         List<Url> urls = urlRepository.findAll();
         return ResponseEntity.ok(urls);
-    }
-    
-    @PostMapping("/urls")
-    public ResponseEntity<Url> createUrl(@RequestBody CreateUrlRequest request) {
-        // Generate a simple short code (in production, use a proper algorithm)
-        String shortCode = generateShortCode();
-        
-        Url url = new Url(request.getOriginalUrl(), shortCode, request.getUserId());
-        Url savedUrl = urlRepository.save(url);
-        
-        return ResponseEntity.ok(savedUrl);
     }
     
     @GetMapping("/urls/{shortCode}")
@@ -51,33 +45,19 @@ public class UrlController {
     
     @PostMapping("/shorten")
     public ResponseEntity<ShortenUrlResponse> shortenUrl(@RequestBody ShortenUrlRequest request) {
-        // Print the JSON body to console
-        System.out.println("Received shorten request:");
-        System.out.println("URL: " + request.getUrl());
-        System.out.println("User ID: " + request.getUserId());
-        System.out.println("Full request: " + request.toString());
         Optional<Integer> userId = Optional.ofNullable(request.getUserId());
-        
+        String originalUrl = request.getUrl();
         // Generate a short code for the URL
-        String shortCode = generateShortCode();
-        
-        // Save to database
-        Url url = new Url(request.getUrl(), shortCode, userId.orElse(-1));
-        Url savedUrl = urlRepository.save(url);
+        String shortCode = shortenURLService.generateShortCode(request.getUrl(), userId);
         
         // Create response object
         ShortenUrlResponse response = new ShortenUrlResponse();
-        response.setOriginalUrl(savedUrl.getOriginalUrl());
-        response.setShortCode(savedUrl.getShortCode());
-        response.setUserId(savedUrl.getUserId());
+        response.setOriginalUrl(originalUrl);
+        response.setShortCode(shortCode);
+        response.setUserId(userId.orElse(-1));
         response.setMessage("URL shortened successfully");
         
         return ResponseEntity.ok(response);
-    }
-    
-    private String generateShortCode() {
-        // Simple implementation - in production, use a better algorithm
-        return "SC" + System.currentTimeMillis() % 1000000;
     }
     
     // Inner class for request body
