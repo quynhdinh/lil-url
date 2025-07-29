@@ -47,6 +47,12 @@ public class UrlController {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    @GetMapping("/users/{userId}/urls")
+    public ResponseEntity<List<Url>> getUserUrls(@PathVariable Integer userId) {
+        List<Url> userUrls = urlRepository.findByUserId(userId);
+        return ResponseEntity.ok(userUrls);
+    }
 
     @PostMapping("/shorten")
     public ResponseEntity<ShortenUrlResponse> shortenUrl(@RequestBody ShortenUrlRequest request) {
