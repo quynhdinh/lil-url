@@ -24,3 +24,7 @@ hs_err_pid*
 replay_pid*
 backend/target
 backend/run.sh
+backend/.idea
+./idea/
+backend/.vscode/
+*.iml
