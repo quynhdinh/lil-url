@@ -46,7 +46,7 @@ public class UserController {
     
     @PostMapping
     public ResponseEntity<CreateUserResponse> createUser(@RequestBody CreateUserRequest request) {
-        // Check if user already exists
+        // Check if a user already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             CreateUserResponse response = new CreateUserResponse();
             response.setSuccess(false);
@@ -54,7 +54,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        // Create new user
+        // Create a new user
         User user = new User(request.getEmail(), request.getPassword(), request.getFullName());
         User savedUser = userRepository.save(user);
         
@@ -113,7 +113,7 @@ public class UserController {
     public static class CreateUserResponse {
         private boolean success;
         private String message;
-        private Long userId;
+        private Integer userId;
         private String email;
         private String fullName;
         
@@ -133,11 +133,11 @@ public class UserController {
             this.message = message;
         }
         
-        public Long getUserId() {
+        public Integer getUserId() {
             return userId;
         }
         
-        public void setUserId(Long userId) {
+        public void setUserId(Integer userId) {
             this.userId = userId;
         }
         

@@ -5,6 +5,9 @@ import com.example.sample_spring_boot.repository.UrlRepository;
 import com.example.sample_spring_boot.service.ShortenURLService;
 import com.example.sample_spring_boot.service.UrlService;
 import com.example.sample_spring_boot.service.ClickService;
+import com.example.sample_spring_boot.entity.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 /*
- * signed in user can create a custom short URL
- * signed in user can view all URLs they created
+ * a signed-in user can create a custom short URL
+ * a signed-in user can view all URLs they created
 */
 @RestController
 @RequestMapping("/api")
@@ -55,14 +58,26 @@ public class UrlController {
     }
 
     @GetMapping("/users/{userId}/urls")
-    public ResponseEntity<List<Url>> getUserUrls(@PathVariable Integer userId) {
+    public ResponseEntity<List<Url>> getMyUrls() {
+        // Get the authenticated user's ID from SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        Integer userId = user.getId();
+
         List<Url> userUrls = urlRepository.findByUserId(userId);
         return ResponseEntity.ok(userUrls);
     }
 
     @PostMapping("/shorten")
     public ResponseEntity<ShortenUrlResponse> shortenUrl(@RequestBody ShortenUrlRequest request) {
-        Optional<Integer> userId = Optional.ofNullable(request.getUserId());
+        // Get authenticated a user if available
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Integer> userId = Optional.empty();
+        
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            userId = Optional.of(((User) authentication.getPrincipal()).getId());
+        }
+        
         String originalUrl = request.getUrl();
         if (userId.isEmpty() && request.getCustomCode() != null) {
             ShortenUrlResponse response = new ShortenUrlResponse();
@@ -111,7 +126,6 @@ public class UrlController {
     // Inner class for shorten URL request body
     public static class ShortenUrlRequest {
         private String url;
-        private Integer userId;
         private String customCode; // Optional custom short code
 
         public String getUrl() {
@@ -120,14 +134,6 @@ public class UrlController {
 
         public void setUrl(String url) {
             this.url = url;
-        }
-
-        public Integer getUserId() {
-            return userId;
-        }
-
-        public void setUserId(Integer userId) {
-            this.userId = userId;
         }
 
         public String getCustomCode() {
@@ -142,12 +148,11 @@ public class UrlController {
         public String toString() {
             return "ShortenUrlRequest{" +
                     "url='" + url + '\'' +
-                    ", userId=" + userId +
                     '}';
         }
     }
 
-    // Inner class for shorten URL response body
+    // Inner class for shortening URL response body
     public static class ShortenUrlResponse {
         private String originalUrl;
         private String shortCode;
