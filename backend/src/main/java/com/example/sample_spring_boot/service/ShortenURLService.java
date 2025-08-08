@@ -19,13 +19,13 @@ public class ShortenURLService {
 
     public String generateShortCode(String originalUrl, Optional<String> customCode, Optional<Integer> userId) {
         if (userId.isPresent()){ // signed in user can create as many custom short URLs as they want
-            String shortCode = customCode.isPresent() ? customCode.get() : shortenUrl(originalUrl + userId.get() + System.currentTimeMillis());
+            String shortCode = customCode.orElseGet(() -> shortenUrl(originalUrl + userId.get() + System.currentTimeMillis()));
             Url newUrl = new Url(originalUrl, shortCode, userId.get());
             urlRepository.save(newUrl);
             return shortCode;
         } else {
             // don't care customCode for anonymous user
-            Optional<Url> byOriginalUrl = urlRepository.findByOriginalUrl(originalUrl);
+            Optional<Url> byOriginalUrl = urlRepository.findByOriginalUrlCreatedAnnonymously(originalUrl);
             if (byOriginalUrl.isPresent()) {
                 return byOriginalUrl.get().getShortCode();
             }

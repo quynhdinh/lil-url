@@ -2,6 +2,7 @@ package com.example.sample_spring_boot.repository;
 
 import com.example.sample_spring_boot.entity.Url;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,8 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
     /**
      * Find URL by original URL
      */
-    Optional<Url> findByOriginalUrl(String originalUrl);
+    @Query("SELECT u FROM Url u WHERE u.originalUrl = :originalUrl AND u.userId = -1")
+    Optional<Url> findByOriginalUrlCreatedAnnonymously(String originalUrl);
     
     /**
      * Find all URLs created by a specific user
