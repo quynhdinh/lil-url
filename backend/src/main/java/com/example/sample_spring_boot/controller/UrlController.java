@@ -101,6 +101,31 @@ public class UrlController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/urls")
+    public ResponseEntity<String> deleteUrl(@RequestParam String shortCode) {
+        // Get authenticated user ID
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Integer> userId = Optional.empty();
+
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            userId = Optional.of(((User) authentication.getPrincipal()).getId());
+        }
+        if (userId.isEmpty()){
+            return ResponseEntity.badRequest().body("User is not authenticated. Please sign in first.");
+        }
+
+        // Check if URL exists and belongs to the user
+        Optional<Url> urlOptional = urlRepository.findByShortCodeAndUserId(shortCode, userId.get());
+        if (urlOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Delete the URL
+        urlRepository.delete(urlOptional.get());
+        return ResponseEntity.ok("URL deleted successfully");
+    }
+
     // Inner class for request body
     public static class CreateUrlRequest {
         private String originalUrl;
