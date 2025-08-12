@@ -4,7 +4,6 @@ import com.example.sample_spring_boot.entity.Url;
 import com.example.sample_spring_boot.repository.UrlRepository;
 import com.example.sample_spring_boot.service.ClickService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +14,15 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class ClickController {
     
-    @Autowired
-    private ClickService clickService;
+    private final ClickService clickService;
     
-    @Autowired
-    private UrlRepository urlRepository;
-    
+    private final UrlRepository urlRepository;
+
+    public ClickController(ClickService clickService, UrlRepository urlRepository) {
+        this.clickService = clickService;
+        this.urlRepository = urlRepository;
+    }
+
     /**
      * Get link count (number of URLs created) by user
      * @param userId The user ID

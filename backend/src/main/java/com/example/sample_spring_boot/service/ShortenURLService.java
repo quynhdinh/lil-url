@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.sample_spring_boot.entity.Url;
@@ -14,11 +13,13 @@ import com.google.common.hash.Hashing;
 @Service
 public class ShortenURLService {
 
-    @Autowired
-    private UrlRepository urlRepository;
+    private final UrlRepository urlRepository;
 
+    public ShortenURLService(UrlRepository urlRepository) {
+        this.urlRepository = urlRepository;
+    }
     public String generateShortCode(String originalUrl, Optional<String> customCode, Optional<Integer> userId) {
-        if (userId.isPresent()){ // signed in user can create as many custom short URLs as they want
+        if (userId.isPresent()){ // signed-in user can create as many custom short URLs as they want
             String shortCode = customCode.orElseGet(() -> shortenUrl(originalUrl + userId.get() + System.currentTimeMillis()));
             Url newUrl = new Url(originalUrl, shortCode, userId.get());
             urlRepository.save(newUrl);

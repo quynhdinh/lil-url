@@ -1,7 +1,6 @@
 package com.example.sample_spring_boot.controller;
 
 import com.example.sample_spring_boot.entity.Url;
-import com.example.sample_spring_boot.repository.UrlRepository;
 import com.example.sample_spring_boot.service.ShortenURLService;
 import com.example.sample_spring_boot.service.UrlService;
 import com.example.sample_spring_boot.service.ClickService;
@@ -24,10 +23,11 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class UrlController {
 
-    @Autowired
-    private UrlRepository urlRepository;
-    @Autowired
-    private UrlService urlService;
+    private final UrlService urlService;
+
+    public UrlController(UrlService urlService) {
+        this.urlService = urlService;
+    }
 
     @Autowired
     private ShortenURLService shortenURLService;
@@ -42,13 +42,13 @@ public class UrlController {
 
     @GetMapping("/urls")
     public ResponseEntity<List<Url>> getAllUrls() {
-        List<Url> urls = urlRepository.findAll();
+        List<Url> urls = urlService.findAll();
         return ResponseEntity.ok(urls);
     }
 
     @GetMapping("/urls/{shortCode}")
     public ResponseEntity<Url> getUrl(@PathVariable String shortCode) {
-        Optional<Url> url = urlRepository.findByShortCode(shortCode);
+        Optional<Url> url = urlService.findByShortCode(shortCode);
         if (url.isPresent()) {
             clickService.recordClick(shortCode, url.get().getUserId()); // Record click for anonymous user
             return ResponseEntity.ok(url.get());
@@ -64,7 +64,7 @@ public class UrlController {
         User user = (User) authentication.getPrincipal();
         Integer userId = user.getId();
 
-        List<Url> userUrls = urlRepository.findByUserId(userId);
+        List<Url> userUrls = urlService.findByUserId(userId);
         return ResponseEntity.ok(userUrls);
     }
 
@@ -116,13 +116,13 @@ public class UrlController {
         }
 
         // Check if URL exists and belongs to the user
-        Optional<Url> urlOptional = urlRepository.findByShortCodeAndUserId(shortCode, userId.get());
+        Optional<Url> urlOptional = urlService.findByShortCodeAndUserId(shortCode, userId.get());
         if (urlOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         // Delete the URL
-        urlRepository.delete(urlOptional.get());
+        urlService.delete(urlOptional.get());
         return ResponseEntity.ok("URL deleted successfully");
     }
 
