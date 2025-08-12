@@ -39,4 +39,8 @@ public class UrlService {
     public void delete(Url url) {
         urlRepository.delete(url);
     }
+
+    public long countByUserId(Integer userId) {
+        return urlRepository.countByUserId(userId);
+    }
 }
