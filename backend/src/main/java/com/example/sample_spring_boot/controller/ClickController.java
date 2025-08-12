@@ -122,7 +122,6 @@ public class ClickController {
         ));
     }
     
-    // Response records
     public record LinkCountResponse(
         Integer userId,
         long linkCount,

@@ -38,24 +38,16 @@ public class UserController {
     
     @PostMapping
     public ResponseEntity<CreateUserResponse> createUser(@RequestBody CreateUserRequest request) {
-        // Check if a user already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            CreateUserResponse response = new CreateUserResponse();
-            response.setSuccess(false);
-            response.setMessage("User with this email already exists");
+        if (userRepository.existsByEmail(request.email())) {
+            CreateUserResponse response = new CreateUserResponse(false, "User with this email already exists", null, null, null);
             return ResponseEntity.badRequest().body(response);
         }
         
         // Create a new user
-        User user = new User(request.getEmail(), request.getPassword(), request.getFullName());
+        User user = new User(request.email(), request.password(), request.fullName());
         User savedUser = userRepository.save(user);
-        
-        CreateUserResponse response = new CreateUserResponse();
-        response.setSuccess(true);
-        response.setMessage("User created successfully");
-        response.setUserId(savedUser.getId());
-        response.setEmail(savedUser.getEmail());
-        response.setFullName(savedUser.getFullName());
+
+        CreateUserResponse response = new CreateUserResponse(true, "User created successfully", savedUser.getId(), savedUser.getEmail(), savedUser.getFullName());
         
         return ResponseEntity.ok(response);
     }
@@ -70,83 +62,10 @@ public class UserController {
         }
     }
     
-    // Inner class for create user request
-    public static class CreateUserRequest {
-        private String email;
-        private String password;
-        private String fullName;
-        
-        public String getEmail() {
-            return email;
-        }
-        
-        public void setEmail(String email) {
-            this.email = email;
-        }
-        
-        public String getPassword() {
-            return password;
-        }
-        
-        public void setPassword(String password) {
-            this.password = password;
-        }
-        
-        public String getFullName() {
-            return fullName;
-        }
-        
-        public void setFullName(String fullName) {
-            this.fullName = fullName;
-        }
+    public record CreateUserRequest(String email, String password, String fullName) {
     }
     
-    // Inner class for create user response
-    public static class CreateUserResponse {
-        private boolean success;
-        private String message;
-        private Integer userId;
-        private String email;
-        private String fullName;
-        
-        public boolean isSuccess() {
-            return success;
-        }
-        
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-        
-        public String getMessage() {
-            return message;
-        }
-        
-        public void setMessage(String message) {
-            this.message = message;
-        }
-        
-        public Integer getUserId() {
-            return userId;
-        }
-        
-        public void setUserId(Integer userId) {
-            this.userId = userId;
-        }
-        
-        public String getEmail() {
-            return email;
-        }
-        
-        public void setEmail(String email) {
-            this.email = email;
-        }
-        
-        public String getFullName() {
-            return fullName;
-        }
-        
-        public void setFullName(String fullName) {
-            this.fullName = fullName;
-        }
+    public record CreateUserResponse(boolean success, String message, Integer userId, String email, String fullName) {
     }
+        
 }

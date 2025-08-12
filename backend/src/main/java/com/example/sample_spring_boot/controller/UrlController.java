@@ -78,25 +78,19 @@ public class UrlController {
             userId = Optional.of(((User) authentication.getPrincipal()).getId());
         }
         
-        String originalUrl = request.getUrl();
-        if (userId.isEmpty() && request.getCustomCode() != null) {
-            ShortenUrlResponse response = new ShortenUrlResponse();
-            response.setMessage("Custom short code is not allowed for anonymous users");
+        String originalUrl = request.url();
+        if (userId.isEmpty() && request.customCode() != null) {
+            ShortenUrlResponse response = new ShortenUrlResponse(null, null, null, "Custom short code is not allowed for anonymous users");
             return ResponseEntity.badRequest().body(response);
         }
-        if (userId.isPresent() && urlService.isShortCodeExists(request.getCustomCode())) {
-            ShortenUrlResponse response = new ShortenUrlResponse();
-            response.setMessage("Custom short code already exists. Please choose another one.");
+        if (userId.isPresent() && urlService.isShortCodeExists(request.customCode())) {
+            ShortenUrlResponse response = new ShortenUrlResponse(null, null, null, "Custom short code already exists. Please choose another one.");
             return ResponseEntity.badRequest().body(response);
         }
-        String shortCode = shortenURLService.generateShortCode(request.getUrl(), Optional.ofNullable(request.getCustomCode()), userId);
+        String shortCode = shortenURLService.generateShortCode(request.url(), Optional.ofNullable(request.customCode()), userId);
 
         // Create response object
-        ShortenUrlResponse response = new ShortenUrlResponse();
-        response.setOriginalUrl(originalUrl);
-        response.setShortCode(shortCode);
-        response.setUserId(userId.orElse(-1));
-        response.setMessage("URL shortened successfully");
+        ShortenUrlResponse response = new ShortenUrlResponse(originalUrl, shortCode, userId.orElse(-1), "URL shortened successfully");
 
         return ResponseEntity.ok(response);
     }
@@ -127,124 +121,17 @@ public class UrlController {
     }
 
     // Inner class for request body
-    public static class CreateUrlRequest {
-        private String originalUrl;
-        private Integer userId;
-
-        public String getOriginalUrl() {
-            return originalUrl;
-        }
-
-        public void setOriginalUrl(String originalUrl) {
-            this.originalUrl = originalUrl;
-        }
-
-        public Integer getUserId() {
-            return userId;
-        }
-
-        public void setUserId(Integer userId) {
-            this.userId = userId;
-        }
+    public record CreateUrlRequest(String originalUrl, Integer userId) {
     }
 
-    // Inner class for shorten URL request body
-    public static class ShortenUrlRequest {
-        private String url;
-        private String customCode; // Optional custom short code
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getCustomCode() {
-            return customCode;
-        }
-
-        public void setCustomCode(String customCode) {
-            this.customCode = customCode;
-        }
-
-        @Override
-        public String toString() {
-            return "ShortenUrlRequest{" +
-                    "url='" + url + '\'' +
-                    '}';
-        }
+    public record ShortenUrlRequest(String url, String customCode) {
     }
 
     // Inner class for shortening URL response body
-    public static class ShortenUrlResponse {
-        private String originalUrl;
-        private String shortCode;
-        private Integer userId;
-        private String message;
-
-        public String getOriginalUrl() {
-            return originalUrl;
-        }
-
-        public void setOriginalUrl(String originalUrl) {
-            this.originalUrl = originalUrl;
-        }
-
-        public String getShortCode() {
-            return shortCode;
-        }
-
-        public void setShortCode(String shortCode) {
-            this.shortCode = shortCode;
-        }
-
-        public Integer getUserId() {
-            return userId;
-        }
-
-        public void setUserId(Integer userId) {
-            this.userId = userId;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
+    public record ShortenUrlResponse(String originalUrl, String shortCode, Integer userId, String message) {
     }
 
     // Inner class for get URL response body
-    public static class GetUrlResponse {
-        private String originalUrl;
-        private String shortCode;
-        private String message;
-
-        public String getOriginalUrl() {
-            return originalUrl;
-        }
-
-        public void setOriginalUrl(String originalUrl) {
-            this.originalUrl = originalUrl;
-        }
-
-        public String getShortCode() {
-            return shortCode;
-        }
-
-        public void setShortCode(String shortCode) {
-            this.shortCode = shortCode;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
+    public record GetUrlResponse(String originalUrl, String shortCode, String message) {
     }
 }
