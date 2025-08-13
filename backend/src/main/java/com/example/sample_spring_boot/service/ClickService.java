@@ -84,7 +84,7 @@ public class ClickService {
         Optional<Url> url = urlRepository.findByShortCode(shortCode);
         String originalUrl = url.map(Url::getOriginalUrl).orElse("Unknown");
 
-        return new ClickStats(shortCode, originalUrl, totalClicks, uniqueUsers, anonymousClicks, clicks);
+        return new ClickStats(shortCode, originalUrl, totalClicks, uniqueUsers, anonymousClicks);
     }
 
     /**
@@ -128,6 +128,6 @@ public class ClickService {
     }
 
     public record ClickStats(String shortCode, String originalUrl, long totalClicks,
-                              long uniqueUsers, long anonymousClicks, List<Click> recentClicks) {
+                              long uniqueUsers, long anonymousClicks) {
     }
 }

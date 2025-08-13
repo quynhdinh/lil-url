@@ -105,10 +105,15 @@ public class ClickController {
      * @param shortCode The short code of the URL
      * @return Response with URL click statistics
      */
-    @GetMapping("/users/{userId}/urls/{shortCode}/clicks")
-    public ResponseEntity<UrlClicksResponse> getUrlClicksByUser(@PathVariable Integer userId, 
-                                                               @PathVariable String shortCode) {
-        // Verify the URL belongs to the user
+    @GetMapping("/clicks/statistics/{shortCode}")
+    public ResponseEntity<UrlStatsResponse> getUrlClicksByUser(@PathVariable String shortCode) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        Integer userId = user.getId();
+        if (userId == null) {
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
         Optional<Url> url = urlService.findByShortCodeAndUserId(shortCode, userId);
 
         if (url.isEmpty()) {
@@ -117,15 +122,15 @@ public class ClickController {
         
         // Get click statistics for this URL
         ClickService.ClickStats clickStats = clickService.getClickStats(shortCode);
-        
-        return ResponseEntity.ok(new UrlClicksResponse(
+
+        return ResponseEntity.ok(new UrlStatsResponse(
             userId,
             shortCode,
-            clickStats.getOriginalUrl(),
-            clickStats.getTotalClicks(),
-            clickStats.getUniqueUsers(),
-            clickStats.getAnonymousClicks(),
-            "URL clicks retrieved successfully"
+            clickStats.originalUrl(),
+            clickStats.totalClicks(),
+            clickStats.uniqueUsers(),
+            clickStats.anonymousClicks(),
+            "Statistics retrieved successfully"
         ));
     }
     
@@ -150,7 +155,7 @@ public class ClickController {
         String message
     ) {}
     
-    public record UrlClicksResponse(
+    public record UrlStatsResponse(
         Integer userId,
         String shortCode,
         String originalUrl,

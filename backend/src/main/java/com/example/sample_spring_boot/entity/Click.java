@@ -1,7 +1,6 @@
 package com.example.sample_spring_boot.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "clicks")
@@ -20,17 +19,14 @@ public class Click {
     @Column(name = "created_at", nullable = false)
     private Long createdAt;
     
-    // Default constructor
     public Click() {}
     
-    // Constructor
     public Click(Integer userId, String shortCode) {
         this.userId = userId;
         this.shortCode = shortCode;
         this.createdAt = System.currentTimeMillis();
     }
     
-    // Getters and setters
     public Long getId() {
         return id;
     }
