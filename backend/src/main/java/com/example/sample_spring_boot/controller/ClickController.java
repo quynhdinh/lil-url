@@ -1,10 +1,13 @@
 package com.example.sample_spring_boot.controller;
 
 import com.example.sample_spring_boot.entity.Url;
+import com.example.sample_spring_boot.entity.User;
 import com.example.sample_spring_boot.service.ClickService;
 import com.example.sample_spring_boot.service.UrlService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,10 +31,14 @@ public class ClickController {
      * @param userId The user ID
      * @return Response with link count
      */
-    @GetMapping("/users/{userId}/link-count")
-    public ResponseEntity<LinkCountResponse> getLinkCountByUser(@PathVariable Integer userId) {
-        long linkCount = urlService.countByUserId(userId);
-        
+    @GetMapping("/clicks/count")
+    public ResponseEntity<LinkCountResponse> getLinkCountByUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        Integer userId = user.getId();
+
+        long linkCount = clickService.countByUserId(userId);
+
         return ResponseEntity.ok(new LinkCountResponse(
             userId,
             linkCount,
