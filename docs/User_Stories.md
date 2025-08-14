@@ -1,5 +1,5 @@
 ### 1. Anonymous User Stories
-- As an anonymous user, I want to shorten a long URL so that I can easily share it without revealing the original link.
+- As an anonymous user, I want to shorten a long URL so that I can easily share it in short form.
 - As an anonymous user, I want to sign up for an account so that I can use special features like custom aliases and URL statistics.
 ### 2. Signed-in User Stories
 - As a signed-in user, I want to shorten a long URL with a custom alias so that I can create memorable links for my audience.
