@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LilURL - URL Shortener</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+
+        .url-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .url-input::placeholder {
+            color: #999;
+        }
+
+        .shorten-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .shorten-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .shorten-btn:active {
+            transform: translateY(0);
+        }
+
+        .shorten-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .short-url {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-family: monospace;
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .copy-btn.copied {
+            background: #6c757d;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            color: #667eea;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .short-url {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔗 LilURL</div>
+        <div class="subtitle">Shorten your long URLs with style</div>
+        
+        <div class="input-group">
+            <input 
+                type="url" 
+                class="url-input" 
+                id="longUrl" 
+                placeholder="Enter your long URL here... (e.g., https://example.com/very/long/url)"
+                required
+            >
+            <div class="error-message" id="errorMessage">Please enter a valid URL</div>
+            <div class="loading" id="loadingMessage">Shortening URL...</div>
+        </div>
+        
+        <button class="shorten-btn" id="shortenBtn" onclick="shortenUrl()">
+            ✨ Shorten URL
+        </button>
+        
+        <div class="result-section" id="resultSection">
+            <div class="result-label">Your shortened URL:</div>
+            <div class="short-url">
+                <span id="shortUrlText">http://localhost:8080/api/urls/abc123</span>
+                <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">Copy</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="savedChars">0</div>
+                    <div class="stat-label">Characters Saved</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="compressionRatio">0%</div>
+                    <div class="stat-label">Compression</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Clicks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function shortenUrl() {
+            const longUrlInput = document.getElementById('longUrl');
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const resultSection = document.getElementById('resultSection');
+            const shortUrlText = document.getElementById('shortUrlText');
+            const savedCharsEl = document.getElementById('savedChars');
+            const compressionRatioEl = document.getElementById('compressionRatio');
+            const copyBtn = document.getElementById('copyBtn');
+            const shortenBtn = document.getElementById('shortenBtn');
+            
+            const longUrl = longUrlInput.value.trim();
+            
+            // Reset states
+            errorMessage.classList.remove('show');
+            loadingMessage.classList.remove('show');
+            resultSection.classList.remove('show');
+            longUrlInput.style.borderColor = '#e1e5e9';
+            
+            // Validate URL
+            if (!longUrl) {
+                errorMessage.textContent = 'Please enter a URL';
+                errorMessage.classList.add('show');
+                longUrlInput.style.borderColor = '#dc3545';
+                return;
+            }
+            
+            if (!isValidUrl(longUrl)) {
+                errorMessage.textContent = 'Please enter a valid URL (must include http:// or https://)';
+                errorMessage.classList.add('show');
+                longUrlInput.style.borderColor = '#dc3545';
+                return;
+            }
+            
+            // Show loading state
+            loadingMessage.classList.add('show');
+            shortenBtn.disabled = true;
+            shortenBtn.textContent = 'Shortening...';
+            
+            try {
+                // Make API call to your backend
+                const response = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: longUrl,
+                        userId: 1 // You can make this dynamic later
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to shorten URL');
+                }
+                
+                const data = await response.json();
+                const shortUrl = `${window.location.origin}/api/urls/${data.shortCode}`;
+                
+                // Calculate stats
+                const savedChars = longUrl.length - shortUrl.length;
+                const compressionRatio = Math.round((savedChars / longUrl.length) * 100);
+                
+                // Update UI
+                shortUrlText.textContent = shortUrl;
+                savedCharsEl.textContent = savedChars > 0 ? savedChars : 0;
+                compressionRatioEl.textContent = compressionRatio > 0 ? `${compressionRatio}%` : '0%';
+                
+                // Reset copy button
+                copyBtn.textContent = 'Copy';
+                copyBtn.classList.remove('copied');
+                
+                // Show result
+                resultSection.classList.add('show');
+                
+                // Clear input
+                longUrlInput.value = '';
+                
+            } catch (error) {
+                console.error('Error shortening URL:', error);
+                errorMessage.textContent = 'Failed to shorten URL. Please try again.';
+                errorMessage.classList.add('show');
+                longUrlInput.style.borderColor = '#dc3545';
+            } finally {
+                // Reset loading state
+                loadingMessage.classList.remove('show');
+                shortenBtn.disabled = false;
+                shortenBtn.textContent = '✨ Shorten URL';
+            }
+        }
+
+        function copyToClipboard() {
+            const shortUrlText = document.getElementById('shortUrlText').textContent;
+            const copyBtn = document.getElementById('copyBtn');
+            
+            navigator.clipboard.writeText(shortUrlText).then(() => {
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shortUrlText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('longUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                shortenUrl();
+            }
+        });
+
+        // Auto-focus on input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('longUrl').focus();
+        });
+    </script>
+</body>
+</html>
